@@ -1,0 +1,1090 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎯 갓솔 숫자 게임</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+            color: #00ff88;
+            overflow-x: hidden;
+            user-select: none;
+            min-height: 100vh;
+        }
+        
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .game-title {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            text-shadow: 0 0 20px #00ff88;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+        
+        @keyframes glow {
+            from { text-shadow: 0 0 10px #00ff88; }
+            to { text-shadow: 0 0 30px #00ff88; }
+        }
+        
+        .stats-container {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .stat {
+            background: rgba(0, 255, 136, 0.1);
+            border: 2px solid #00ff88;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            min-width: 100px;
+        }
+        
+        .stat-label {
+            display: block;
+            font-size: 0.9em;
+            opacity: 0.8;
+            margin-bottom: 5px;
+        }
+        
+        .stat-value {
+            font-size: 1.4em;
+            font-weight: bold;
+            color: white;
+        }
+        
+        .level-up-indicator {
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, #feca57);
+            border: 3px solid #fff;
+            border-radius: 15px;
+            padding: 15px;
+            text-align: center;
+            animation: pulse 1s ease-in-out infinite alternate;
+            margin: 10px 0;
+        }
+        
+        @keyframes pulse {
+            from { transform: scale(1); }
+            to { transform: scale(1.05); }
+        }
+        
+        #gameCanvas {
+            border: 3px solid #00ff88;
+            border-radius: 10px;
+            background: #1a1a2e;
+            box-shadow: 0 0 30px rgba(0, 255, 136, 0.4);
+            margin: 20px 0;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .btn {
+            background: linear-gradient(45deg, #00ff88, #00cc66);
+            color: #000;
+            border: none;
+            padding: 12px 24px;
+            font-size: 1em;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn:hover {
+            background: linear-gradient(45deg, #00cc66, #00ff88);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 255, 136, 0.4);
+        }
+        
+        .btn:disabled {
+            background: #555;
+            color: #888;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .input-system {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .input-display {
+            background: rgba(0, 0, 0, 0.8);
+            border: 3px solid #00ff88;
+            border-radius: 10px;
+            padding: 20px;
+            font-size: 2em;
+            font-weight: bold;
+            color: #00ff88;
+            min-width: 200px;
+            text-align: center;
+            letter-spacing: 5px;
+        }
+        
+        .input-instructions {
+            font-size: 0.9em;
+            opacity: 0.8;
+            text-align: center;
+        }
+        
+        .number-pad {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            max-width: 350px;
+            margin: 20px auto;
+        }
+        
+        .num-btn {
+            width: 50px;
+            height: 50px;
+            font-size: 1.2em;
+            font-weight: bold;
+            background: linear-gradient(45deg, #2c3e50, #34495e);
+            color: #00ff88;
+            border: 2px solid #00ff88;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .num-btn:hover {
+            background: linear-gradient(45deg, #00ff88, #00cc66);
+            color: #000;
+            transform: scale(1.1);
+        }
+        
+        .enter-btn {
+            width: 100px;
+            height: 50px;
+            font-size: 1em;
+            font-weight: bold;
+            background: linear-gradient(45deg, #ff6b6b, #ff8e8e);
+            color: white;
+            border: 2px solid #ff6b6b;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            grid-column: span 2;
+        }
+        
+        .enter-btn:hover {
+            background: linear-gradient(45deg, #ff8e8e, #ff6b6b);
+            transform: scale(1.05);
+        }
+        
+        .clear-btn {
+            width: 100px;
+            height: 50px;
+            font-size: 1em;
+            font-weight: bold;
+            background: linear-gradient(45deg, #ffa500, #ffb84d);
+            color: white;
+            border: 2px solid #ffa500;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            grid-column: span 2;
+        }
+        
+        .clear-btn:hover {
+            background: linear-gradient(45deg, #ffb84d, #ffa500);
+            transform: scale(1.05);
+        }
+        
+        .feedback {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 1.8em;
+            font-weight: bold;
+            padding: 20px 40px;
+            border-radius: 10px;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 1000;
+            transition: opacity 0.3s ease;
+        }
+        
+        .feedback.show {
+            opacity: 1;
+        }
+        
+        .feedback.correct {
+            background: rgba(0, 255, 0, 0.9);
+            color: white;
+        }
+        
+        .feedback.wrong {
+            background: rgba(255, 0, 0, 0.9);
+            color: white;
+        }
+        
+        .feedback.levelup {
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, #feca57);
+            color: white;
+            animation: rainbow 2s ease-in-out;
+        }
+        
+        @keyframes rainbow {
+            0%, 100% { filter: hue-rotate(0deg); }
+            50% { filter: hue-rotate(180deg); }
+        }
+        
+        .instructions {
+            text-align: center;
+            margin: 20px 0;
+            font-size: 0.9em;
+            opacity: 0.8;
+            max-width: 600px;
+        }
+        
+        .status-badge {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #00ff88;
+            color: #000;
+            padding: 10px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+        
+        @media (max-width: 768px) {
+            .game-title {
+                font-size: 2em;
+            }
+            
+            .stats-container {
+                gap: 10px;
+            }
+            
+            .stat {
+                padding: 10px;
+                min-width: 80px;
+            }
+            
+            #gameCanvas {
+                width: 100%;
+                max-width: 400px;
+                height: 200px;
+            }
+            
+            .number-pad {
+                max-width: 300px;
+            }
+            
+            .num-btn {
+                width: 45px;
+                height: 45px;
+                font-size: 1.1em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="status-badge">🟢 갓솔의 숫자게임임</div>
+    
+    <div class="game-container">
+        <h1 class="game-title">🎯 GodSol</h1>
+        
+        <div class="stats-container">
+            <div class="stat">
+                <span class="stat-label">❤️ 체력</span>
+                <span class="stat-value" id="health">100</span>
+            </div>
+            <div class="stat">
+                <span class="stat-label">⭐ 점수</span>
+                <span class="stat-value" id="score">0</span>
+            </div>
+            <div class="stat">
+                <span class="stat-label">🔥 레벨</span>
+                <span class="stat-value" id="level">1</span>
+            </div>
+            <div class="stat">
+                <span class="stat-label">⚡ 콤보</span>
+                <span class="stat-value" id="combo">0</span>
+            </div>
+            <div class="stat">
+                <span class="stat-label">⚔️ 공격력</span>
+                <span class="stat-value" id="attackPower">1</span>
+            </div>
+        </div>
+        
+        <div class="level-up-indicator" id="levelUpIndicator" style="display: none;">
+            🎉 레벨업 가능! 다음 레벨까지: <span id="nextLevelPoints">300</span>점
+        </div>
+        
+        <canvas id="gameCanvas" width="800" height="400"></canvas>
+        
+        <div class="controls">
+            <button class="btn" id="startBtn">🎮 게임 시작</button>
+            <button class="btn" id="pauseBtn">⏸️ 일시정지</button>
+            <button class="btn" id="restartBtn">🔄 재시작</button>
+        </div>
+        
+        <div class="input-system">
+            <div class="input-display" id="inputDisplay">--</div>
+            <div class="input-instructions">
+                숫자를 입력하고 Enter를 눌러 공격하세요!<br>
+                Clear로 입력을 지울 수 있습니다.
+            </div>
+        </div>
+        
+        <div class="number-pad">
+            <button class="num-btn" data-num="1">1</button>
+            <button class="num-btn" data-num="2">2</button>
+            <button class="num-btn" data-num="3">3</button>
+            <button class="num-btn" data-num="4">4</button>
+            <button class="num-btn" data-num="5">5</button>
+            <button class="num-btn" data-num="6">6</button>
+            <button class="num-btn" data-num="7">7</button>
+            <button class="num-btn" data-num="8">8</button>
+            <button class="num-btn" data-num="9">9</button>
+            <button class="num-btn" data-num="0">0</button>
+            <button class="enter-btn" id="enterBtn">⏎ Enter</button>
+            <button class="clear-btn" id="clearBtn">🗑️ Clear</button>
+        </div>
+        
+        <div class="instructions">
+            🎯 좀비가 수학 문제를 들고 다가옵니다!<br>
+            정답에 해당하는 숫자를 입력하고 Enter를 눌러 번개로 좀비를 처치하세요!<br>
+            키보드 숫자키 또는 화면의 버튼을 사용할 수 있습니다.<br>
+            <strong>🔥 레벨업하면 건물이 커지고 번개가 강해집니다!</strong>
+        </div>
+        
+        <div class="feedback" id="feedback"></div>
+    </div>
+
+    <script>
+        // 🎯 GotDot 게임 클래스 - 개선된 레벨 시스템 버전
+        class ImprovedGotDotGame {
+            constructor() {
+                this.canvas = document.getElementById('gameCanvas');
+                this.ctx = this.canvas.getContext('2d');
+                
+                // 게임 상태
+                this.gameRunning = false;
+                this.gamePaused = false;
+                this.health = 100;
+                this.score = 0;
+                this.level = 1;
+                this.combo = 0;
+                this.attackPower = 1;
+                
+                // 입력 시스템
+                this.currentInput = '';
+                this.maxInputLength = 2;
+                
+                // 게임 객체
+                this.zombies = [];
+                this.particles = [];
+                this.lightnings = [];
+                
+                // 타워 (레벨별 크기)
+                this.tower = { 
+                    x: 100, 
+                    y: 200, 
+                    level: 1,
+                    baseSize: 30,
+                    towerSize: 25,
+                    height: 25
+                };
+                
+                // 타이머
+                this.lastZombieSpawn = 0;
+                this.zombieSpawnRate = 2500;
+                
+                // 레벨업 효과
+                this.levelUpEffect = 0;
+                
+                this.init();
+            }
+            
+            init() {
+                this.setupEventListeners();
+                this.gameLoop();
+                this.updateUI();
+                this.updateInputDisplay();
+                
+                console.log('🎯 GotDot 개선된 레벨 시스템 게임이 로딩되었습니다!');
+                this.showFeedback('개선된 레벨 시스템! 게임 시작 버튼을 눌러주세요!', 'correct');
+            }
+            
+            setupEventListeners() {
+                // 게임 컨트롤
+                document.getElementById('startBtn').addEventListener('click', () => this.startGame());
+                document.getElementById('pauseBtn').addEventListener('click', () => this.togglePause());
+                document.getElementById('restartBtn').addEventListener('click', () => this.restartGame());
+                
+                // 입력 시스템
+                document.getElementById('enterBtn').addEventListener('click', () => this.submitAttack());
+                document.getElementById('clearBtn').addEventListener('click', () => this.clearInput());
+                
+                // 숫자 패드
+                document.querySelectorAll('.num-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const num = parseInt(btn.dataset.num);
+                        this.addToInput(num);
+                        btn.style.transform = 'scale(0.95)';
+                        setTimeout(() => btn.style.transform = '', 100);
+                    });
+                });
+                
+                // 키보드 입력
+                document.addEventListener('keydown', (e) => {
+                    if (e.key >= '0' && e.key <= '9') {
+                        this.addToInput(parseInt(e.key));
+                        
+                        // 버튼 시각적 피드백
+                        const btn = document.querySelector(`[data-num="${e.key}"]`);
+                        if (btn) {
+                            btn.style.transform = 'scale(0.95)';
+                            setTimeout(() => btn.style.transform = '', 100);
+                        }
+                    } else if (e.key === 'Enter') {
+                        this.submitAttack();
+                    } else if (e.key === 'Backspace' || e.key === 'Delete') {
+                        this.clearInput();
+                    }
+                });
+            }
+            
+            addToInput(num) {
+                if (this.currentInput.length < this.maxInputLength) {
+                    this.currentInput += num.toString();
+                    this.updateInputDisplay();
+                }
+            }
+            
+            clearInput() {
+                this.currentInput = '';
+                this.updateInputDisplay();
+            }
+            
+            updateInputDisplay() {
+                const display = document.getElementById('inputDisplay');
+                if (this.currentInput === '') {
+                    display.textContent = '--';
+                } else {
+                    display.textContent = this.currentInput.padEnd(2, '-');
+                }
+            }
+            
+            submitAttack() {
+                if (this.currentInput === '') return;
+                
+                const number = parseInt(this.currentInput);
+                this.attackWithNumber(number);
+                this.clearInput();
+            }
+            
+            startGame() {
+                this.gameRunning = true;
+                this.gamePaused = false;
+                document.getElementById('startBtn').textContent = '🎮 진행중...';
+                document.getElementById('startBtn').disabled = true;
+                this.showFeedback('게임 시작! 번개로 좀비를 처치하세요!', 'correct');
+            }
+            
+            togglePause() {
+                this.gamePaused = !this.gamePaused;
+                document.getElementById('pauseBtn').textContent = 
+                    this.gamePaused ? '▶️ 계속하기' : '⏸️ 일시정지';
+                
+                this.showFeedback(this.gamePaused ? '게임 일시정지' : '게임 계속', 'correct');
+            }
+            
+            restartGame() {
+                this.health = 100;
+                this.score = 0;
+                this.level = 1;
+                this.combo = 0;
+                this.attackPower = 1;
+                this.gameRunning = false;
+                this.gamePaused = false;
+                this.zombies = [];
+                this.particles = [];
+                this.lightnings = [];
+                this.lastZombieSpawn = 0;
+                this.levelUpEffect = 0;
+                this.currentInput = '';
+                
+                // 타워 초기화
+                this.tower.level = 1;
+                this.tower.baseSize = 30;
+                this.tower.towerSize = 25;
+                this.tower.height = 25;
+                
+                document.getElementById('startBtn').textContent = '🎮 게임 시작';
+                document.getElementById('startBtn').disabled = false;
+                document.getElementById('pauseBtn').textContent = '⏸️ 일시정지';
+                
+                this.updateUI();
+                this.updateInputDisplay();
+                this.showFeedback('게임이 재시작되었습니다!', 'correct');
+            }
+            
+            generateMathProblem() {
+                const operations = ['+', '-', '*'];
+                const operation = operations[Math.floor(Math.random() * operations.length)];
+                
+                let a, b, answer;
+                
+                switch (operation) {
+                    case '+':
+                        a = Math.floor(Math.random() * 5) + 1;
+                        b = Math.floor(Math.random() * 5) + 1;
+                        answer = a + b;
+                        break;
+                    case '-':
+                        a = Math.floor(Math.random() * 8) + 2;
+                        b = Math.floor(Math.random() * a) + 1;
+                        answer = a - b;
+                        break;
+                    case '*':
+                        a = Math.floor(Math.random() * 3) + 2;
+                        b = Math.floor(Math.random() * 3) + 2;
+                        answer = a * b;
+                        break;
+                }
+                
+                // 답이 0-99 사이가 되도록 조정
+                if (answer > 99) {
+                    answer = answer % 100;
+                }
+                
+                return {
+                    question: `${a} ${operation} ${b}`,
+                    answer: answer
+                };
+            }
+            
+            spawnZombie() {
+                if (!this.gameRunning || this.gamePaused) return;
+                
+                const problem = this.generateMathProblem();
+                
+                const zombie = {
+                    x: this.canvas.width + 50,
+                    y: 200,
+                    health: 100 + (this.level - 1) * 20,
+                    maxHealth: 100 + (this.level - 1) * 20,
+                    speed: 0.8 + (this.level - 1) * 0.1,
+                    question: problem.question,
+                    answer: problem.answer,
+                    animFrame: 0,
+                    color: `hsl(${Math.random() * 360}, 70%, 50%)`,
+                    size: 24 + (this.level - 1) * 2
+                };
+                
+                this.zombies.push(zombie);
+                this.playSound('spawn');
+            }
+            
+            createLightning(startX, startY, endX, endY, power) {
+                const lightning = {
+                    x: startX,
+                    y: startY,
+                    targetX: endX,
+                    targetY: endY,
+                    life: 20,
+                    maxLife: 20,
+                    power: power,
+                    color: this.getLightningColor(power)
+                };
+                
+                this.lightnings.push(lightning);
+            }
+            
+            getLightningColor(power) {
+                const colors = [
+                    '#00ff88', '#00ccff', '#ff00ff', '#ffff00', '#ff8800',
+                    '#ff0088', '#8800ff', '#ff0000', '#ffffff', '#00ffff'
+                ];
+                return colors[Math.min(power - 1, colors.length - 1)];
+            }
+            
+            attackWithNumber(number) {
+                if (!this.gameRunning || this.gamePaused) return;
+                
+                let targetZombie = null;
+                let minDistance = Infinity;
+                
+                for (const zombie of this.zombies) {
+                    if (zombie.answer === number) {
+                        const distance = this.canvas.width - zombie.x;
+                        if (distance < minDistance) {
+                            minDistance = distance;
+                            targetZombie = zombie;
+                        }
+                    }
+                }
+                
+                if (targetZombie) {
+                    this.playSound('correct');
+                    
+                    // 번개 생성
+                    this.createLightning(
+                        this.tower.x, 
+                        this.tower.y - this.tower.height, 
+                        targetZombie.x, 
+                        targetZombie.y, 
+                        this.attackPower
+                    );
+                    
+                    const damage = 100 + (this.attackPower - 1) * 50;
+                    targetZombie.health -= damage;
+                    
+                    if (targetZombie.health <= 0) {
+                        const index = this.zombies.indexOf(targetZombie);
+                        this.zombies.splice(index, 1);
+                        this.playSound('kill');
+                        this.createParticles(targetZombie.x, targetZombie.y, '#00ff88');
+                    }
+                    
+                    this.combo++;
+                    const basePoints = this.level * 10;
+                    const comboBonus = Math.floor(basePoints * this.combo * 0.1);
+                    const totalPoints = basePoints + comboBonus;
+                    this.score += totalPoints;
+                    
+                    this.showFeedback(`번개 공격! +${totalPoints}점 (콤보 x${this.combo})`, 'correct');
+                    
+                } else {
+                    this.playSound('wrong');
+                    this.combo = 0;
+                    this.health -= 10;
+                    
+                    this.showFeedback('틀렸습니다! 콤보가 끊어졌습니다!', 'wrong');
+                    
+                    if (this.health <= 0) {
+                        this.gameOver();
+                    }
+                }
+                
+                this.updateUI();
+            }
+            
+            createParticles(x, y, color) {
+                for (let i = 0; i < 15; i++) {
+                    this.particles.push({
+                        x: x,
+                        y: y,
+                        vx: (Math.random() - 0.5) * 10,
+                        vy: (Math.random() - 0.5) * 10,
+                        color: color,
+                        life: 50,
+                        maxLife: 50,
+                        size: Math.random() * 8 + 4
+                    });
+                }
+            }
+            
+            createLevelUpEffect() {
+                for (let i = 0; i < 30; i++) {
+                    this.particles.push({
+                        x: this.tower.x + (Math.random() - 0.5) * 100,
+                        y: this.tower.y + (Math.random() - 0.5) * 100,
+                        vx: (Math.random() - 0.5) * 15,
+                        vy: (Math.random() - 0.5) * 15,
+                        color: `hsl(${Math.random() * 360}, 100%, 70%)`,
+                        life: 60,
+                        maxLife: 60,
+                        size: Math.random() * 10 + 5
+                    });
+                }
+            }
+            
+            playSound(type) {
+                try {
+                    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    const oscillator = audioContext.createOscillator();
+                    const gainNode = audioContext.createGain();
+                    
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+                    
+                    let frequency = 200;
+                    let duration = 0.15;
+                    
+                    switch (type) {
+                        case 'correct': 
+                            frequency = 523; 
+                            duration = 0.2; 
+                            break;
+                        case 'wrong': 
+                            frequency = 147; 
+                            duration = 0.4; 
+                            break;
+                        case 'kill': 
+                            frequency = 659; 
+                            duration = 0.3; 
+                            break;
+                        case 'spawn': 
+                            frequency = 220; 
+                            duration = 0.1; 
+                            break;
+                        case 'levelup':
+                            // 레벨업 사운드 - 화음
+                            this.playLevelUpSound();
+                            return;
+                    }
+                    
+                    oscillator.frequency.value = frequency;
+                    oscillator.type = 'square';
+                    
+                    gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
+                    
+                    oscillator.start(audioContext.currentTime);
+                    oscillator.stop(audioContext.currentTime + duration);
+                } catch (e) {
+                    console.log('오디오 재생 실패:', e);
+                }
+            }
+            
+            playLevelUpSound() {
+                try {
+                    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    
+                    // 화음 사운드 생성
+                    const frequencies = [523, 659, 784, 1047]; // C5, E5, G5, C6
+                    
+                    frequencies.forEach((freq, index) => {
+                        const oscillator = audioContext.createOscillator();
+                        const gainNode = audioContext.createGain();
+                        
+                        oscillator.connect(gainNode);
+                        gainNode.connect(audioContext.destination);
+                        
+                        oscillator.frequency.value = freq;
+                        oscillator.type = 'sine';
+                        
+                        const startTime = audioContext.currentTime + index * 0.1;
+                        const duration = 0.3;
+                        
+                        gainNode.gain.setValueAtTime(0.1, startTime);
+                        gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + duration);
+                        
+                        oscillator.start(startTime);
+                        oscillator.stop(startTime + duration);
+                    });
+                } catch (e) {
+                    console.log('레벨업 사운드 재생 실패:', e);
+                }
+            }
+            
+            showFeedback(text, type) {
+                const feedback = document.getElementById('feedback');
+                feedback.textContent = text;
+                feedback.className = `feedback ${type} show`;
+                
+                setTimeout(() => {
+                    feedback.classList.remove('show');
+                }, 2000);
+            }
+            
+            gameOver() {
+                this.gameRunning = false;
+                this.showFeedback(`🎮 게임 오버! 최종 점수: ${this.score}점`, 'wrong');
+                document.getElementById('startBtn').textContent = '🎮 게임 시작';
+                document.getElementById('startBtn').disabled = false;
+                this.playSound('wrong');
+            }
+            
+            updateUI() {
+                document.getElementById('health').textContent = this.health;
+                document.getElementById('score').textContent = this.score;
+                document.getElementById('level').textContent = this.level;
+                document.getElementById('combo').textContent = this.combo;
+                document.getElementById('attackPower').textContent = this.attackPower;
+                
+                // 레벨업 지시자 업데이트
+                const pointsToNextLevel = 300 - (this.score % 300);
+                const levelUpIndicator = document.getElementById('levelUpIndicator');
+                const nextLevelPoints = document.getElementById('nextLevelPoints');
+                
+                if (pointsToNextLevel <= 100) {
+                    levelUpIndicator.style.display = 'block';
+                    nextLevelPoints.textContent = pointsToNextLevel;
+                } else {
+                    levelUpIndicator.style.display = 'none';
+                }
+                
+                // 레벨업 체크
+                const newLevel = Math.floor(this.score / 300) + 1;
+                if (newLevel > this.level) {
+                    this.level = newLevel;
+                    this.attackPower = Math.min(10, Math.floor(this.level / 2) + 1);
+                    
+                    // 타워 업그레이드
+                    this.tower.level = this.level;
+                    this.tower.baseSize = 30 + (this.level - 1) * 5;
+                    this.tower.towerSize = 25 + (this.level - 1) * 4;
+                    this.tower.height = 25 + (this.level - 1) * 3;
+                    
+                    // 레벨업 효과
+                    this.levelUpEffect = 60;
+                    this.createLevelUpEffect();
+                    this.playSound('levelup');
+                    
+                    this.showFeedback(`🎉 레벨 ${this.level} 달성! 건물과 번개가 강화되었습니다!`, 'levelup');
+                    this.zombieSpawnRate = Math.max(1000, this.zombieSpawnRate - 150);
+                }
+            }
+            
+            update() {
+                if (!this.gameRunning || this.gamePaused) return;
+                
+                if (this.levelUpEffect > 0) {
+                    this.levelUpEffect--;
+                }
+                
+                if (Date.now() - this.lastZombieSpawn > this.zombieSpawnRate) {
+                    this.spawnZombie();
+                    this.lastZombieSpawn = Date.now();
+                }
+                
+                for (let i = this.zombies.length - 1; i >= 0; i--) {
+                    const zombie = this.zombies[i];
+                    zombie.x -= zombie.speed;
+                    zombie.animFrame += 0.1;
+                    
+                    if (zombie.x < -100) {
+                        this.zombies.splice(i, 1);
+                        this.health -= 15;
+                        this.combo = 0;
+                        this.showFeedback('좀비가 통과했습니다!', 'wrong');
+                        
+                        if (this.health <= 0) {
+                            this.gameOver();
+                        }
+                    }
+                }
+                
+                for (let i = this.lightnings.length - 1; i >= 0; i--) {
+                    const lightning = this.lightnings[i];
+                    lightning.life--;
+                    
+                    if (lightning.life <= 0) {
+                        this.lightnings.splice(i, 1);
+                    }
+                }
+                
+                for (let i = this.particles.length - 1; i >= 0; i--) {
+                    const particle = this.particles[i];
+                    particle.x += particle.vx;
+                    particle.y += particle.vy;
+                    particle.vy += 0.2;
+                    particle.life--;
+                    
+                    if (particle.life <= 0) {
+                        this.particles.splice(i, 1);
+                    }
+                }
+            }
+            
+            render() {
+                this.ctx.fillStyle = '#1a1a2e';
+                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+                
+                // 배경 그리드
+                this.ctx.strokeStyle = 'rgba(0, 255, 136, 0.1)';
+                this.ctx.lineWidth = 1;
+                for (let x = 0; x < this.canvas.width; x += 20) {
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(x, 0);
+                    this.ctx.lineTo(x, this.canvas.height);
+                    this.ctx.stroke();
+                }
+                for (let y = 0; y < this.canvas.height; y += 20) {
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(0, y);
+                    this.ctx.lineTo(this.canvas.width, y);
+                    this.ctx.stroke();
+                }
+                
+                // 좀비 경로
+                this.ctx.strokeStyle = '#654321';
+                this.ctx.lineWidth = 80;
+                this.ctx.lineCap = 'round';
+                this.ctx.beginPath();
+                this.ctx.moveTo(this.canvas.width + 50, 200);
+                this.ctx.lineTo(-50, 200);
+                this.ctx.stroke();
+                
+                // 타워 렌더링
+                const towerX = 80;
+                const towerY = 200;
+                
+                this.ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+                this.ctx.fillRect(towerX - this.tower.baseSize/2, towerY + 15, this.tower.baseSize, 10);
+                
+                this.ctx.fillStyle = '#2c3e50';
+                this.ctx.fillRect(towerX - this.tower.baseSize/2, towerY + 15, this.tower.baseSize, this.tower.baseSize/2);
+                
+                this.ctx.fillStyle = '#00ff88';
+                this.ctx.fillRect(towerX - this.tower.towerSize/2, towerY - this.tower.height, this.tower.towerSize, this.tower.height);
+                
+                this.ctx.fillStyle = '#00cc66';
+                this.ctx.fillRect(towerX - this.tower.towerSize/2 + 5, towerY - this.tower.height + 5, this.tower.towerSize - 10, 10);
+                this.ctx.fillRect(towerX - 5, towerY - this.tower.height - 10, 10, 15);
+                
+                if (this.levelUpEffect > 0) {
+                    this.ctx.globalAlpha = this.levelUpEffect / 60;
+                    this.ctx.fillStyle = '#ffff00';
+                    this.ctx.fillRect(towerX - this.tower.baseSize, towerY - this.tower.height - 20, this.tower.baseSize * 2, this.tower.height + 40);
+                    this.ctx.globalAlpha = 1;
+                }
+                
+                // 번개 렌더링
+                this.lightnings.forEach(lightning => {
+                    const alpha = lightning.life / lightning.maxLife;
+                    this.ctx.globalAlpha = alpha;
+                    this.ctx.strokeStyle = lightning.color;
+                    this.ctx.lineWidth = 3 + lightning.power;
+                    this.ctx.lineCap = 'round';
+                    
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(lightning.x, lightning.y);
+                    this.ctx.lineTo(lightning.targetX, lightning.targetY);
+                    this.ctx.stroke();
+                });
+                this.ctx.globalAlpha = 1;
+                
+                // 좀비들 렌더링
+                this.zombies.forEach(zombie => {
+                    const size = zombie.size;
+                    
+                    this.ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+                    this.ctx.fillRect(zombie.x - size/2, zombie.y + size/2, size, size/3);
+                    
+                    this.ctx.fillStyle = zombie.color;
+                    this.ctx.fillRect(zombie.x - size/2, zombie.y - size/2, size, size);
+                    
+                    this.ctx.fillStyle = '#8B4513';
+                    this.ctx.fillRect(zombie.x - size/3, zombie.y - size/3, size * 2/3, size/2);
+                    
+                    this.ctx.fillStyle = '#ff0000';
+                    this.ctx.fillRect(zombie.x - size/4, zombie.y - size/4, size/6, size/6);
+                    this.ctx.fillRect(zombie.x + size/12, zombie.y - size/4, size/6, size/6);
+                    
+                    this.ctx.fillStyle = '#000';
+                    this.ctx.fillRect(zombie.x - size/6, zombie.y - size/6, size/3, size/8);
+                    
+                    // 문제 표시 패널 (정답 숨김) - 위치 조정
+                    this.ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+                    this.ctx.fillRect(zombie.x + size/2, zombie.y - size - 50, 140, 50);
+                    this.ctx.strokeStyle = '#333';
+                    this.ctx.lineWidth = 2;
+                    this.ctx.strokeRect(zombie.x + size/2, zombie.y - size - 50, 140, 50);
+                    
+                    this.ctx.fillStyle = '#333';
+                    this.ctx.font = 'bold 18px Courier New';
+                    this.ctx.textAlign = 'center';
+                    this.ctx.fillText(zombie.question, zombie.x + size/2 + 70, zombie.y - size - 30);
+                    
+                    this.ctx.fillStyle = '#ff4757';
+                    this.ctx.font = 'bold 24px Courier New';
+                    this.ctx.fillText('', zombie.x + size/2 + 70, zombie.y - size - 10);
+                    
+                    // 체력바 - 위치 조정
+                    const healthPercent = zombie.health / zombie.maxHealth;
+                    this.ctx.fillStyle = '#333';
+                    this.ctx.fillRect(zombie.x - size/2, zombie.y - size - 65, size, 8);
+                    this.ctx.fillStyle = healthPercent > 0.6 ? '#2ecc71' : 
+                                       healthPercent > 0.3 ? '#f39c12' : '#e74c3c';
+                    this.ctx.fillRect(zombie.x - size/2, zombie.y - size - 65, size * healthPercent, 8);
+                });
+                
+                // 파티클 효과
+                this.particles.forEach(particle => {
+                    const alpha = particle.life / particle.maxLife;
+                    this.ctx.globalAlpha = alpha;
+                    this.ctx.fillStyle = particle.color;
+                    this.ctx.beginPath();
+                    this.ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+                    this.ctx.fill();
+                });
+                this.ctx.globalAlpha = 1;
+                
+                // 게임 상태 오버레이
+                if (!this.gameRunning) {
+                    this.ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+                    this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+                    
+                    this.ctx.fillStyle = '#00ff88';
+                    this.ctx.font = 'bold 28px Courier New';
+                    this.ctx.textAlign = 'center';
+                    this.ctx.fillText('🎯 GotDot', this.canvas.width / 2, this.canvas.height / 2 - 40);
+                    
+                    this.ctx.font = 'bold 18px Courier New';
+                    this.ctx.fillText('개선된 레벨 시스템 수학 좀비 디펜스', this.canvas.width / 2, this.canvas.height / 2 - 10);
+                    
+                    this.ctx.font = 'bold 16px Courier New';
+                    this.ctx.fillStyle = '#ffffff';
+                    this.ctx.fillText('게임 시작 버튼을 눌러주세요!', this.canvas.width / 2, this.canvas.height / 2 + 20);
+                }
+                
+                if (this.gamePaused) {
+                    this.ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+                    this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+                    
+                    this.ctx.fillStyle = '#00ff88';
+                    this.ctx.font = 'bold 24px Courier New';
+                    this.ctx.textAlign = 'center';
+                    this.ctx.fillText('⏸️ 게임 일시정지', this.canvas.width / 2, this.canvas.height / 2);
+                }
+            }
+            
+            gameLoop() {
+                this.update();
+                this.render();
+                requestAnimationFrame(() => this.gameLoop());
+            }
+        }
+        
+        // 게임 시작
+        document.addEventListener('DOMContentLoaded', () => {
+            try {
+                const game = new ImprovedGotDotGame();
+                console.log('🎯 GotDot 개선된 레벨 시스템 게임이 성공적으로 시작되었습니다!');
+            } catch (error) {
+                console.error('게임 로딩 중 오류:', error);
+                alert('게임 로딩 중 오류가 발생했습니다. 브라우저를 새로고침해주세요.');
+            }
+        });
+    </script>
+</body>
+</html> 
