@@ -467,6 +467,13 @@
     
     <div class="game-container">
         <h1 class="game-title">🎯 GodSol</h1>
+
+        
+        <div class="controls">
+            <button class="btn" id="startBtn">🎮 게임 시작</button>
+            <button class="btn" id="pauseBtn">⏸️ 일시정지</button>
+            <button class="btn" id="restartBtn">🔄 재시작</button>
+        </div>
         
         <div class="stats-container">
             <div class="stat">
@@ -485,10 +492,6 @@
                 <span class="stat-label">⚡ 콤보</span>
                 <span class="stat-value" id="combo">0</span>
             </div>
-            <div class="stat">
-                <span class="stat-label">⚔️ 공격력</span>
-                <span class="stat-value" id="attackPower">1</span>
-            </div>
         </div>
         
         <div class="level-up-indicator" id="levelUpIndicator" style="display: none;">
@@ -497,11 +500,7 @@
         
         <canvas id="gameCanvas" width="800" height="400"></canvas>
         
-        <div class="controls">
-            <button class="btn" id="startBtn">🎮 게임 시작</button>
-            <button class="btn" id="pauseBtn">⏸️ 일시정지</button>
-            <button class="btn" id="restartBtn">🔄 재시작</button>
-        </div>
+
         
         <div class="input-system">
             <div class="input-display" id="inputDisplay">--</div>
