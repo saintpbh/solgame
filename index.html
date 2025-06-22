@@ -6,7 +6,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="mobile-web-app-capable" content="yes">
-
+    <title>🎯 갓솔 숫자 게임</title>
     <style>
         * {
             margin: 0;
@@ -326,16 +326,16 @@
             
             .game-title {
                 font-size: 1.5em;
-                margin-bottom: 4px;
+                margin-bottom: 8px;
             }
             
             .stats-container {
-                gap: 2px;
-                margin-bottom: 4px;
+                gap: 4px;
+                margin-bottom: 8px;
             }
             
             .stat {
-                padding: 3px 4px;
+                padding: 6px 8px;
                 min-width: 50px;
                 max-width: 65px;
             }
@@ -467,13 +467,6 @@
     
     <div class="game-container">
         <h1 class="game-title">🎯 GodSol</h1>
-
-        
-        <div class="controls">
-            <button class="btn" id="startBtn">🎮 게임 시작</button>
-            <button class="btn" id="pauseBtn">⏸️ 일시정지</button>
-            <button class="btn" id="restartBtn">🔄 재시작</button>
-        </div>
         
         <div class="stats-container">
             <div class="stat">
@@ -492,6 +485,10 @@
                 <span class="stat-label">⚡ 콤보</span>
                 <span class="stat-value" id="combo">0</span>
             </div>
+            <div class="stat">
+                <span class="stat-label">⚔️ 공격력</span>
+                <span class="stat-value" id="attackPower">1</span>
+            </div>
         </div>
         
         <div class="level-up-indicator" id="levelUpIndicator" style="display: none;">
@@ -500,7 +497,11 @@
         
         <canvas id="gameCanvas" width="800" height="400"></canvas>
         
-
+        <div class="controls">
+            <button class="btn" id="startBtn">🎮 게임 시작</button>
+            <button class="btn" id="pauseBtn">⏸️ 일시정지</button>
+            <button class="btn" id="restartBtn">🔄 재시작</button>
+        </div>
         
         <div class="input-system">
             <div class="input-display" id="inputDisplay">--</div>
